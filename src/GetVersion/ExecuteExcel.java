@@ -11,6 +11,7 @@ public class ExecuteExcel {
     Common common = new Common();
     Utils utils = new Utils();
     public static final ArrayList<String> reuseToExcel = new ArrayList<String>();
+    public static final ArrayList<String> reuseNToExcel = new ArrayList<String>();
 
     public void executeExcel(String diffPath, String codePath, String excelPath) throws Exception {
 
@@ -30,9 +31,9 @@ public class ExecuteExcel {
             resultPath = excelPath.substring(0, excelPath.lastIndexOf("/"));
         }
         System.out.println(excelPath);
-        System.out.println(utils.deleteFileOrDir(resultPath + File.separator + "复用函数文件"));
+        System.out.println(utils.deleteFileOrDir(resultPath + File.separator + Common.reuseFunctiionFolder));
 
-        System.out.println(utils.deleteFileOrDir(resultPath + File.separator + "复用N行文件"));
+        System.out.println(utils.deleteFileOrDir(resultPath + File.separator + Common.reuseN_LinesFolder));
 
         for (VulnerInfo vulnerInfo : vulnerInfos) {
             if (vulnerInfo.report.length() > 0) {
@@ -57,7 +58,6 @@ public class ExecuteExcel {
                 vulnerInfo.report += "Software version出错，请注意检查";
                 continue;
             }
-            vulnerInfo.containVersions = versions;
             // 获取文件存在的版本列
             vulnerInfo.existVersions = checkDiff.getVersionFileExist(codePathTemp, versionPrefix,
                     vulnerInfo.fileName, versions);
@@ -91,6 +91,7 @@ public class ExecuteExcel {
         System.out.println("同一漏洞的代码复用实例存放路径：" + resultPath + "\n");
         vulnerabilityInfo.writeResultToExcel(vulnerInfos, excelPath);
         vulnerabilityInfo.reuseResultToExcel(excelPath, reuseToExcel);
+        vulnerabilityInfo.reuseResultToExcelN(excelPath, reuseNToExcel);
     }
 
     void printResult(ArrayList<VulnerInfo> vulnerInfos) {
@@ -103,17 +104,16 @@ public class ExecuteExcel {
     }
 
     public static void main(String[] args) throws Exception {
-        // String path = "C:\\Users\\wt\\Desktop\\tyy\\实验室work-tyy\\";
+         //String path = "C:\\Users\\wt\\Desktop\\tyy\\实验室work-tyy\\";
         String path2 = "C:\\Users\\wt\\Desktop\\tyy\\实验室work-tyy\\getContainVersion\\Wireshark\\";
         // String diffPath1 =
         // "C:\\Users\\wt\\Desktop\\tyy\\实验室work-tyy\\Ffmpeg-最终核对数据-测试集\\Ffmpeg补丁文件-2016.1.1";
-        // String diffPath2 =
-        // "C:\\Users\\wt\\Desktop\\tyy\\实验室work-tyy\\Ffmpeg复用代码获取程序修改\\Ffmpeg补丁文件-新";
+        String diffPath2 =
+         "C:\\Users\\wt\\Desktop\\tyy\\实验室work-tyy\\Ffmpeg复用代码获取程序修改\\Ffmpeg补丁文件-新";
         String codePath1 = "C:\\Users\\wt\\Desktop\\tyy\\software";
-        // String excelPath1 = path + "getContainVersion\\test.xlsx";
+        //String excelPath1 = path + "getContainVersion\\test.xls";
         // String excelPath2 = path + "getContainVersion\\testTemp.xls";
-        // String excelPath3 = path +
-        // "getContainVersion\\2016.1.16-Ffmpeg漏洞信息-新.xls";
+        //String excelPath3 = path +"getContainVersion\\2016.1.16-Ffmpeg漏洞信息-新.xls";
         String excel = "C:\\Users\\wt\\Desktop\\tyy\\实验室work-tyy\\getContainVersion\\Linux kernel\\修改-Linux kernel漏洞信息-2016.2.15-temp.xlsx";
         String excel2 = "C:\\Users\\wt\\Desktop\\tyy\\实验室work-tyy\\getContainVersion\\Linux kernel\\test2.xlsx";
         String diff = "C:\\Users\\wt\\Desktop\\tyy\\实验室work-tyy\\getContainVersion\\Linux kernel\\Linux kernel补丁文件-2016.2.15";
@@ -125,7 +125,7 @@ public class ExecuteExcel {
         
         String path="C:\\Users\\wt\\Desktop\\tyy\\实验室work-tyy\\getContainVersion\\Linux kernel\\";
         String diffL=path+"Linux kernel补丁文件-2016.2.15";
-        String excelL=path+"50s.xlsx";
+        String excelL=path+"test.xlsx";
         
                 
         ExecuteExcel executeExcel = new ExecuteExcel();

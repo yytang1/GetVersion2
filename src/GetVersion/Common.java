@@ -6,7 +6,7 @@ import CodeReuse.FindFile;
 
 public class Common {
     public String markStr = "//***\r\n";
-    public int txtMaxNum = 1000;
+    public int txtMaxNum = 10;
     // 正则匹配
     public static String re_begin = "^";
     public static String re_end = "$";
@@ -27,6 +27,9 @@ public class Common {
     public static String reuseCode = "reuseCode";
     public static String reuseCodeMostMatch = "reuseCodeMostMatch";
     public static String reVersionList = re_begin + re_version + re_end;
+    
+    public static String reuseFunctiionFolder="ReuseFunction";
+    public static String reuseN_LinesFolder="ReuseN_Lines";
 
     public double threshold = 0.6;
 
@@ -74,7 +77,13 @@ public class Common {
             String version) {
         return cve + "_" + software + version + "_" + functionName;
     }
-
+    //函数命名，修改成CVE_2011_3941_ffmpeg_0_8_9_decode_mb.c
+    public String changeNameTo_(String function) {
+        function=function.replace(".", "_");
+        function=function.replace("-", "_");
+        return function;
+    }
+    
     /**
      * 将window下换行符“\r\n”替换为“\n”
      * 

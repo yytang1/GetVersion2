@@ -203,7 +203,10 @@ public class CodeReuse {
             if (max[j] > 0) {
                 len = 0;
                 for (i = maxIndex[j] - max[j] + 1; i <= maxIndex[j]; i++)
+                {
+                    System.out.println(functionList[i]);
                     len++;
+                }
             }
         }
         double similarValue = (double) len / (double) len2;
@@ -273,6 +276,7 @@ public class CodeReuse {
                 System.out.println(functionName);
                 int num = 0;
                 for (String version : versions) {
+                    int flag = 0;
                     // 如果超过 10个 ，退出该函数
                     if (num > common.txtMaxNum)
                         break;
@@ -284,18 +288,19 @@ public class CodeReuse {
                         System.out.println(functionPath + "中" + functionName + "不存在");
                         continue;
                     }
-                    String funcPath=resultPath + File.separator + "复用函数文件";
+                    String funcPath=resultPath + File.separator + Common.reuseFunctiionFolder;
                     new File(funcPath).mkdirs();
-                    String nLinePath=resultPath + File.separator + "复用N行文件";
+                    String nLinePath=resultPath + File.separator + Common.reuseN_LinesFolder;
                     new File(nLinePath).mkdirs();
                     String funcFileName=common.getMostMarkFunctionPath(vulnerInfo.softeware,
                             vulnerInfo.cve,
                             functionName.equals(Common.functionNameIsNull) ? fileName
                                     : functionName,version);
-                    
+                    //修改函数文件命名方式.c
+                    funcFileName=common.changeNameTo_(funcFileName);
                     // 找到不完全匹配的函数
                     for (int j = 0; j < diffListOld.size(); j++) {
-                        int flag = 0;
+                        
                         String functionFix = MostmatchDiffLine(functionCode, diffListFix.get(j),
                                 true, null);
                         String functionOld = MostmatchDiffLine(functionCode, diffListOld.get(j),
@@ -308,15 +313,20 @@ public class CodeReuse {
                             
                             String filePathN = nLinePath+File.separator + funcFileName+"_N.txt";
                             System.out.println(filePathN);
-                            String filePath2 = funcPath+File.separator+funcFileName + ".txt";
+                            String filePath2 = funcPath+File.separator+funcFileName + ".c";
                             if (utils.fileExist(filePathN))
                                 flag++;
+                            String reuseFileName=flag > 0 ?funcFileName +"_N(" + flag + ")":funcFileName;
                             filePathN = flag > 0 ? (nLinePath+File.separator + funcFileName +"_N(" + flag + ").txt")
                                     : filePathN;
                             String nFile="diff的N行：\r\n"+diffListOld.get(j).replaceAll("\n", "\r\n")+"\r\n//**************\r\n"+functionOld;
                             utils.writeText(nFile, filePathN, false);
                             if (!utils.fileExist(filePath2))
-                                utils.writeText(functionCode.replaceAll("\n", "\r\n"), filePath2, false);
+                            {
+                                functionCode=functionCode.replace(functionName,funcFileName);
+                                System.out.println(funcFileName);
+                                utils.writeText(functionCode.replace("\n", "\r\n"), filePath2, false);
+                            }
 
                             reuseCodeList.add(functionOld);
                             num++;
@@ -324,9 +334,12 @@ public class CodeReuse {
                             if (!reuseVersionList.contains(version)) {
                                 reuseVersionList.add(version);
                             }
-                            if (!ExecuteExcel.reuseToExcel.contains(version)) {
+                            if (!ExecuteExcel.reuseToExcel.contains(funcFileName)) {
                                 ExecuteExcel.reuseToExcel.add(funcFileName);
-                            }                           
+                            }
+                            if (!ExecuteExcel.reuseNToExcel.contains(reuseFileName)) {
+                                ExecuteExcel.reuseNToExcel.add(reuseFileName);
+                            }
                         }
                     }
                 }
