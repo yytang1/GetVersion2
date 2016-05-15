@@ -99,8 +99,9 @@ public class ExecuteExcel {
 					resultPath);
 			vulnerInfosTemp.add(vulnerInfo);
 			vulnerabilityInfo.writeResultToExcel(vulnerInfosTemp, excelPath);
+			vulnerabilityInfo.reuseResultToExcel(excelPath, reuseToExcel);
+			vulnerabilityInfo.reuseResultToExcelN(excelPath, reuseNToExcel);
 		}
-		printResult(vulnerInfos);
 		System.out.println("同一漏洞的代码复用实例存放路径：" + resultPath + "\n");
 		vulnerabilityInfo.writeResultToExcel(vulnerInfos, excelPath);
 		vulnerabilityInfo.reuseResultToExcel(excelPath, reuseToExcel);

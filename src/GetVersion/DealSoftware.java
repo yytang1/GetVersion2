@@ -9,6 +9,7 @@ public class DealSoftware {
 
     public ArrayList<String> getFileName(String filepath, String software) {
         filepath = filepath + File.separator + software;
+        System.out.println(filepath);
         File file = new File(filepath);
         String[] filelisttemp = file.list();
         ArrayList<String> filelist = new ArrayList<String>();
