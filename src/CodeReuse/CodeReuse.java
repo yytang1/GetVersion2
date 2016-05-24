@@ -256,6 +256,92 @@ public class CodeReuse {
 		return functionMatch;
 	}
 
+	public String MostmatchDiffLine2(String funciton, String diff,
+			Boolean isSimilarValue) {
+		// 测试
+		String functionMatch = "";
+		int len1, len2;
+		String[] functionList = funciton.trim().split("\n");
+		diff = common.handleLineBreak(diff);
+		String[] diffList = diff.trim().split("\n");
+		len1 = functionList.length;
+		len2 = diffList.length;
+		int maxLen = len1 > len2 ? len1 : len2;
+
+		int[] max = new int[maxLen];// 保存最长子串长度的数组
+		int[] maxIndex = new int[maxLen];// 保存最长子串长度最大索引的数组
+		int[] c = new int[maxLen];
+
+		int i, j;
+		for (i = 0; i < len2; i++) {
+			for (j = len1 - 1; j >= 0; j--) {
+				if (diffList[i].equals(functionList[j].trim())) {
+					if ((i == 0) || (j == 0))
+						c[j] = 1;
+					else
+						c[j] = c[j - 1] + 1;// 此时C[j-1]还是上次循环中的值，因为还没被重新赋值
+				} else {
+					c[j] = 0;
+				}
+
+				// 如果是大于那暂时只有一个是最长的,而且要把后面的清0;
+				if (c[j] > max[0]) {
+					max[0] = c[j];
+					maxIndex[0] = j;
+
+					for (int k = 1; k < maxLen; k++) {
+						max[k] = 0;
+						maxIndex[k] = 0;
+					}
+				}
+				// 有多个是相同长度的子串
+				else if (c[j] == max[0]) {
+					for (int k = 1; k < maxLen; k++) {
+						if (max[k] == 0) {
+							max[k] = c[j];
+							maxIndex[k] = j;
+							break; // 在后面加一个就要退出循环了
+						}
+					}
+				}
+			}
+		}
+		// 打印最长子字符串
+		int len = 0;
+		for (j = 0; j < maxLen; j++) {
+			if (max[j] > 0) {
+				len = 0;
+				for (i = maxIndex[j] - max[j] + 1; i <= maxIndex[j]; i++) {
+					System.out.println(functionList[i]);
+					len++;
+				}
+			}
+		}
+		double similarValue = (double) len / (double) len2;
+		System.out.println("最长匹配长度为：" + len + "\t相似值：" + similarValue);
+		if (isSimilarValue) {
+			return String.valueOf(similarValue);
+		}
+
+		for (j = 0, len = 0; j < maxLen; j++) {
+			if (max[j] > 0) {
+				// System.out.println("第" + (j + 1) + "个公共子串:");
+				int count = maxIndex[j] - maxIndex[j] + max[j];
+				int temp1 = len2 - count;
+				int begin = (maxIndex[j] - max[j] + 1 - temp1);
+				int end = (begin >= 0 ? maxIndex[j] : maxIndex[j] - begin);
+				end = (end > len1 - 1 ? len1 - 1 : end);
+				begin = (begin < 0 ? 0 : begin);
+				for (i = begin; i <= end; i++) {
+					functionMatch += (functionMatch.length() > 0 ? "\r\n"
+							+ functionList[i] : functionList[i]);
+				}
+				break;
+			}
+		}
+		return functionMatch;
+	}
+
 	public ArrayList<String> getMostMatch(String diffFilePath, String codePath,
 			String versionPrefix, VulnerInfo vulnerInfo,
 			ArrayList<String> versions, String resultPath) {
@@ -263,7 +349,8 @@ public class CodeReuse {
 		ArrayList<String> reuseVersionList = new ArrayList<String>();
 
 		String[] functionList = null;
-		if (vulnerInfo.functionName == null||vulnerInfo.functionName.length()<1) {
+		if (vulnerInfo.functionName == null
+				|| vulnerInfo.functionName.length() < 1) {
 			functionList = new String[] { "functionName is null" };
 			return reuseVersionList;
 		} else {
@@ -321,6 +408,127 @@ public class CodeReuse {
 								diffListFix.get(j), true, null);
 						String functionOld = MostmatchDiffLine(functionCode,
 								diffListOld.get(j), false, functionFix);
+						// 存在不完全匹配的函数，将不完全匹配的函数，存到txt中
+						if (functionOld.length() < 1) {
+							continue;
+						}
+						if (functionOld.length() > 0
+								&& !reuseCodeList.contains(functionOld)) {
+
+							String filePathN = nLinePath + File.separator
+									+ funcFileName + "_N.txt";
+							String filePath2 = funcPath + File.separator
+									+ funcFileName + ".c";
+							if (utils.fileExist(filePathN))
+								flag++;
+							String reuseFileName = flag > 0 ? funcFileName
+									+ "_N(" + flag + ")" : funcFileName;
+							filePathN = flag > 0 ? (nLinePath + File.separator
+									+ funcFileName + "_N(" + flag + ").txt")
+									: filePathN;
+							String nFile = "diff的N行：\r\n"
+									+ diffListOld.get(j).replaceAll("\n",
+											"\r\n")
+									+ "\r\n//**************\r\n" + functionOld;
+							utils.writeText(nFile, filePathN, false);
+							if (!utils.fileExist(filePath2)) {
+								functionCode = functionCode.replace(
+										functionName, funcFileName);
+								System.out.println(funcFileName);
+								utils.writeText(
+										functionCode.replace("\n", "\r\n"),
+										filePath2, false);
+							}
+
+							reuseCodeList.add(functionOld);
+							num++;
+							System.out.println(filePathN);
+							if (!reuseVersionList.contains(version)) {
+								reuseVersionList.add(version);
+							}
+							String codeSeg = "_" + String.valueOf(j);
+							if (!ExecuteExcel.reuseToExcel
+									.contains(funcFileName + codeSeg)) {
+								ExecuteExcel.reuseToExcel.add(funcFileName
+										+ codeSeg);
+							}
+							if (!ExecuteExcel.reuseNToExcel
+									.contains(reuseFileName + codeSeg)) {
+								ExecuteExcel.reuseNToExcel.add(reuseFileName
+										+ codeSeg);
+							}
+						}
+					}
+				}
+			}
+		}
+		return reuseVersionList;
+	}
+
+	public ArrayList<String> getMostMatch2(String diffFilePath,
+			String codePath, String versionPrefix, VulnerInfo vulnerInfo,
+			ArrayList<String> versions, String resultPath) {
+
+		ArrayList<String> reuseVersionList = new ArrayList<String>();
+
+		String[] functionList = null;
+		if (vulnerInfo.functionName == null
+				|| vulnerInfo.functionName.length() < 1) {
+			functionList = new String[] { "functionName is null" };
+			return reuseVersionList;
+		} else {
+			functionList = vulnerInfo.functionName.split("[;；]");
+		}
+		String[] fileList = vulnerInfo.fileName.split("[;；]");
+
+		for (int i = 0; i < fileList.length; i++) {
+			ArrayList<String> reuseCodeList = new ArrayList<String>();
+			String fileName = fileList[i].replaceAll("[ |　]", " ")
+					.replaceAll("\\u00A0", "").trim();
+			ArrayList<String> diffListOld = handDiff.handleDiff(diffFilePath,
+					vulnerInfo.fileName, functionList[i], true);
+			ArrayList<String> diffListFix = handDiff.handleDiff(diffFilePath,
+					vulnerInfo.fileName, functionList[i], false);
+
+			String[] functionNameList = functionList[i].split("[,，]");
+
+			// 获取diff文件
+			for (String functionName : functionNameList) {
+				int num = 0;
+				for (String version : versions) {
+					int flag = 0;
+					// 如果超过 10个 ，退出该函数
+					if (num > common.txtMaxNum)
+						break;
+					String functionPath = common.getCodefilePath(codePath,
+							versionPrefix, version, fileName);
+					String functionCode = getFunction(functionPath,
+							functionName);
+					if (functionCode.length() < 1) {
+						System.out.println(functionPath + "中" + functionName
+								+ "不存在");
+						continue;
+					}
+					String funcPath = resultPath + File.separator
+							+ Common.reuseFunctiionFolder;
+					new File(funcPath).mkdirs();
+					String nLinePath = resultPath + File.separator
+							+ Common.reuseN_LinesFolder;
+					new File(nLinePath).mkdirs();
+					String funcFileName = common
+							.getMostMarkFunctionPath(
+									vulnerInfo.softeware,
+									vulnerInfo.cve,
+									functionName
+											.equals(Common.functionNameIsNull) ? fileName
+											: functionName, version);
+					// 修改函数文件命名方式.c
+					funcFileName = common.changeNameTo_(funcFileName);
+					// 找到不完全匹配的函数
+					for (int j = 0; j < diffListOld.size(); j++) {
+
+						String functionOld = MostmatchDiffLine2(functionCode,
+								diffListOld.get(j), false);
 						// 存在不完全匹配的函数，将不完全匹配的函数，存到txt中
 						if (functionOld.length() < 1) {
 							continue;

@@ -35,9 +35,18 @@ public class Common {
 
     public String getCodefilePath(String codePath, String versionPrefix, String version,
             String fileName) {
-        String path1 = codePath + File.separator + versionPrefix + version + File.separator
+    	String temp="";
+    	if(codePath.contains("thunderbird"))
+    	{
+    		int pos=version.indexOf(".");
+    		String num=version.substring(0, pos);
+    		temp="comm-esr"+String.valueOf(num)+File.separator;
+    	}
+        String path1 = codePath + File.separator + versionPrefix + version + File.separator+temp
                 + fileName;
-        String path2 = codePath + File.separator + versionPrefix + version;
+        System.out.println(path1);
+        
+        String path2 = codePath + File.separator + versionPrefix + version+ File.separator+temp;
         Utils utils = new Utils();
         if (utils.fileExist(path1)) {
             return path1;

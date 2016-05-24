@@ -1,13 +1,18 @@
-package GetVersion;
+package Tools;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Collections;
 
 import CodeReuse.CodeReuse;
+import GetVersion.CheckDiff;
+import GetVersion.Common;
+import GetVersion.DealSoftware;
+import GetVersion.HandleVersion;
+import GetVersion.Utils;
+import GetVersion.VulnerabilityInfo;
 import GetVersion.VulnerabilityInfo.VulnerInfo;
 
-public class ExecuteExcel {
+public class GetRuse {
 	Common common = new Common();
 	Utils utils = new Utils();
 	public static final ArrayList<String> reuseToExcel = new ArrayList<String>();
@@ -72,31 +77,12 @@ public class ExecuteExcel {
 			System.out.println("文件存在的版本列：" + vulnerInfo.existVersions);
 			// 测试
 
-			ArrayList<String> containVersions = checkDiff
-					.getVersionContainDiff(diffFilePath, codePathTemp,
-							versionPrefix, vulnerInfo, true);
-			if (containVersions == null) {
-				vulnerInfo.report += "diff文件读取函数出错，请检查diff文件;";
-				continue;
-			}
-			Collections.reverse(containVersions);
-			vulnerInfo.containVersions = containVersions;
-			vulnerInfo.errorVersions = checkDiff.getVersionContainDiff(
-					diffFilePath, codePathTemp, versionPrefix, vulnerInfo,
-					false);
-
 			// 针对同一漏洞的代码复用实例的获取
 			System.out.println(versions + "end");
-			System.out.println("containVersions" + vulnerInfo.containVersions
-					+ "end");
 
-			versions.removeAll(vulnerInfo.containVersions);
-			versions.removeAll(vulnerInfo.errorVersions);
-			Collections.reverse(versions);
-
-			vulnerInfo.reuseVersionsMost = codeReuse.getMostMatch(diffFilePath,
-					codePathTemp, versionPrefix, vulnerInfo, versions,
-					resultPath);
+			vulnerInfo.reuseVersionsMost = codeReuse.getMostMatch2(
+					diffFilePath, codePathTemp, versionPrefix, vulnerInfo,
+					versions, resultPath);
 			vulnerInfosTemp.add(vulnerInfo);
 			vulnerabilityInfo.writeResultToExcel(vulnerInfosTemp, excelPath);
 			vulnerabilityInfo.reuseResultToExcel(excelPath, reuseToExcel);
@@ -111,49 +97,18 @@ public class ExecuteExcel {
 	void printResult(ArrayList<VulnerInfo> vulnerInfos) {
 		for (VulnerInfo vulnerInfo : vulnerInfos) {
 			System.out.println("cve:" + vulnerInfo.cve);
-			System.out.println("versions:" + vulnerInfo.containVersions);
-			System.out.println("ErrorVersions:" + vulnerInfo.errorVersions);
 		}
 		System.out.println(vulnerInfos.size());
 	}
 
 	public static void main(String[] args) throws Exception {
-		// // String path = "C:\\Users\\wt\\Desktop\\tyy\\实验室work-tyy\\";
-		// String path2 =
-		// "C:\\Users\\wt\\Desktop\\tyy\\实验室work-tyy\\getContainVersion\\Wireshark\\";
-		// // String diffPath1 =
-		// //
-		// "C:\\Users\\wt\\Desktop\\tyy\\实验室work-tyy\\Ffmpeg-最终核对数据-测试集\\Ffmpeg补丁文件-2016.1.1";
-		// String diffPath2 =
-		// "C:\\Users\\wt\\Desktop\\tyy\\实验室work-tyy\\Ffmpeg复用代码获取程序修改\\Ffmpeg补丁文件-新";
-		// String codePath1 = "C:\\Users\\wt\\Desktop\\tyy\\software";
-		// // String excelPath1 = path + "getContainVersion\\test.xls";
-		// // String excelPath2 = path + "getContainVersion\\testTemp.xls";
-		// // String excelPath3 = path
-		// // +"getContainVersion\\2016.1.16-Ffmpeg漏洞信息-新.xls";
-		// String excel =
-		// "C:\\Users\\wt\\Desktop\\tyy\\实验室work-tyy\\getContainVersion\\Linux kernel\\修改-Linux kernel漏洞信息-2016.2.15-temp.xlsx";
-		// String excel2 =
-		// "C:\\Users\\wt\\Desktop\\tyy\\实验室work-tyy\\getContainVersion\\Linux kernel\\test2.xlsx";
-		// String diff =
-		// "C:\\Users\\wt\\Desktop\\tyy\\实验室work-tyy\\getContainVersion\\Linux kernel\\Linux kernel补丁文件-2016.2.15";
-		// String diffPath4 = path2 + "Wireshark补丁文件-2016.3.7-邓之珺修改diff";
-		// String excelPath4 = path2 + "Wireshark漏洞信息.xls";
-		// String excelPath4_g = path2 + "Wireshark漏洞信息-GetVersion.xls";
-		// String excel5 = "2016.1.26-Ffmpeg漏洞信息-上传服务器.xls";
-		// String excelPatht = path2 + "test.xls";
-		//
-		// String path =
-		// "C:\\Users\\wt\\Desktop\\tyy\\实验室work-tyy\\getContainVersion\\Linux kernel\\";
-		// String diffL = path + "Linux kernel补丁文件-2016.2.15";
-		// String excelL = path + "test.xlsx";
+		// TODO Auto-generated method stub
 		String path = "E:\\myWork\\实验室work-tyy\\5.20\\";
 		String diffL = path + "diffs";
-		String excelL = path + "test5_21_test.xlsx";
+		String excelL = path + "test2.xlsx";
 		String codePath1 = path + "software";
-
-		ExecuteExcel executeExcel = new ExecuteExcel();
-		executeExcel.executeExcel(diffL, codePath1, excelL);
+		GetRuse getRuse = new GetRuse();
+		getRuse.executeExcel(diffL, codePath1, excelL);
 		System.out.println("end");
 	}
 }
